@@ -66,7 +66,7 @@
     "build": "microbundle --target node --no-sourcemap -f cjs,esm",
     "pretest": "npm run build",
     "test": "nyc mocha -t 5000",
-    "test:debug": "DEBUG=@metalsmith/js-bundle nyc mocha -t 5000",
+    "test:debug": "DEBUG=@metalsmith/js-bundle:* npm test",
     "test:e2e": "serve -l 3000 test/fixtures"
   },
   "engines": {

@@ -14,7 +14,7 @@ const debugNs = '@metalsmith/js-bundle'
  * @param {import('metalsmith').Metalsmith} metalsmith
  * @returns {Object}
  */
-function normalizeOptions(options = {}, metalsmith) {
+function normalizeOptions(options = {}, metalsmith, debug) {
   const entries = options.entries || {}
   const isProd = metalsmith.env('NODE_ENV') !== 'development'
   const define = Object.entries(metalsmith.env()).reduce((acc, [name, value]) => {
@@ -34,6 +34,10 @@ function normalizeOptions(options = {}, metalsmith) {
     drop: isProd ? ['console', 'debugger'] : []
   }
 
+  const isFullyInSource = Object.values(entries).every((sourcepath) => {
+    return metalsmith.path(sourcepath).startsWith(metalsmith.source())
+  })
+
   /** @type {Options} */
   const overwrites = {
     entryPoints: entries,
@@ -42,6 +46,11 @@ function normalizeOptions(options = {}, metalsmith) {
     write: false,
     metafile: true,
     define
+  }
+
+  if (isFullyInSource) {
+    debug.info('All entries to bundle are in metalsmith.source(), setting `outbase` to metalsmith.source()')
+    overwrites.outbase = relative(metalsmith.directory(), metalsmith.source())
   }
 
   delete options.entries
@@ -72,7 +81,7 @@ function initJsBundle(options = {}) {
   return function jsBundle(files, metalsmith, done) {
     const debug = metalsmith.debug(debugNs)
 
-    options = normalizeOptions(options, metalsmith)
+    options = normalizeOptions(options, metalsmith, debug)
     if (Object.keys(options.entryPoints).length === 0) {
       debug.warn('No files to process, skipping.')
       done()
