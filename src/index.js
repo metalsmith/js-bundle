@@ -50,7 +50,7 @@ function normalizeOptions(options = {}, metalsmith, debug) {
 
   if (isFullyInSource) {
     debug.info('All entries to bundle are in metalsmith.source(), setting `outbase` to metalsmith.source()')
-    overwrites.outbase = relative(metalsmith.directory(), metalsmith.source())
+    overwrites.outbase = metalsmith.source()
   }
 
   delete options.entries
