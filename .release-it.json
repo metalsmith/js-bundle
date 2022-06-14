@@ -17,8 +17,8 @@
   },
   "github": {
     "release": true,
-    "releaseName": "@metalsmith/~core-plugin~ ${version}",
+    "releaseName": "@metalsmith/js-bundle ${version}",
     "tokenRef": "GITHUB_TOKEN",
-    "assets": ["metalsmith-~core-plugin~-${version}.tgz"]
+    "assets": ["metalsmith-js-bundle-${version}.tgz"]
   }
 }

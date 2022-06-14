@@ -1,50 +1,136 @@
-/**
- * @typedef Options
- * @property {String} key
- */
+import { build } from 'esbuild'
+import { relative, basename, extname } from 'path'
+import es5Plugin from './es5'
 
-/** @type {Options} */
-const defaults = {
-  key: 'key'
-}
+const debugNs = '@metalsmith/js-bundle'
+
+/**
+ * @typedef {import('esbuild').BuildOptions} Options
+ */
 
 /**
  * Normalize plugin options
  * @param {Options} [options]
+ * @param {import('metalsmith').Metalsmith} metalsmith
  * @returns {Object}
  */
-function normalizeOptions(options) {
-  return Object.assign({}, defaults, options || {})
-}
+function normalizeOptions(options = {}, metalsmith) {
+  const entries = options.entries || {}
+  const isProd = metalsmith.env('NODE_ENV') !== 'development'
+  const define = Object.entries(metalsmith.env()).reduce((acc, [name, value]) => {
+    // see notes at https://esbuild.github.io/api/#define, string values require explicit quotes
+    acc[`process.env.${name}`] = typeof value === 'string' ? `'${value}'` : value
+    return acc
+  }, {})
 
-function doSomething(file, path) {
-  file.path = path
-  return file
+  /** @type {Options} */
+  const defaults = {
+    bundle: true,
+    minify: isProd,
+    sourcemap: !isProd,
+    platform: 'browser',
+    target: 'es6',
+    assetNames: '[dir]/[name]',
+    drop: isProd ? ['console', 'debugger'] : []
+  }
+
+  /** @type {Options} */
+  const overwrites = {
+    entryPoints: entries,
+    absWorkingDir: metalsmith.directory(),
+    outdir: basename(metalsmith.destination()),
+    write: false,
+    metafile: true,
+    define
+  }
+
+  delete options.entries
+
+  return {
+    ...defaults,
+    ...options,
+    ...overwrites
+  }
 }
 
 /**
- * A Metalsmith plugin to serve as a boilerplate for other core plugins
+ * A metalsmith plugin that bundles your JS using [esbuild](https://esbuild.github.io)
  *
  * @param {Options} options
  * @returns {import('metalsmith').Plugin}
  */
-function initCorePlugin(options) {
-  options = normalizeOptions(options)
+function initJsBundle(options = {}) {
+  // esbuild does not support ES5 compilation
+  // to avoid it throw an error, force at least ES6 and let esbuild do all the bundling, then postprocess and minify with babel
+  let babelPostProcess = false
+  if (options.target === 'es5') {
+    babelPostProcess = true
+    options.target = 'es6'
+    options.minify = false
+  }
 
-  return function corePlugin(files, metalsmith, done) {
-    const debug = metalsmith.debug('@metalsmith/~core-plugin~')
-    debug('Running with options: %O', options)
+  return function jsBundle(files, metalsmith, done) {
+    const debug = metalsmith.debug(debugNs)
 
-    const fileList = Object.entries(files)
+    options = normalizeOptions(options, metalsmith)
+    if (Object.keys(options.entryPoints).length === 0) {
+      debug.warn('No files to process, skipping.')
+      done()
+    }
 
-    fileList.forEach(([file, path]) => {
-      if (file[options.key]) {
-        doSomething(file, path)
-      }
-    })
+    options.entryPoints = Object.entries(options.entryPoints).reduce((mapped, current) => {
+      const [dest, src] = current
+      mapped[dest] = src
+      return mapped
+    }, {})
 
-    done()
+    debug('Running with options %O', options)
+    const sourceRelPath = relative(metalsmith.directory(), metalsmith.source())
+
+    build(options)
+      .then((result) => {
+        debug(
+          'Finished bundling %O',
+          result.outputFiles.map((o) => relative(metalsmith.destination(), o.path))
+        )
+
+        // first read esbuild metafile to remove the compilation inputs from the build
+        Object.values(result.metafile.outputs).forEach((o) => {
+          if (o.inputs) {
+            metalsmith.match(`${sourceRelPath}/**`, Object.keys(o.inputs)).forEach((input) => {
+              delete files[relative(metalsmith.source(), metalsmith.path(input))]
+            })
+          }
+        })
+
+        result.outputFiles.forEach((file) => {
+          // For in-source files, esbuild returns entries in the format 'build/src/path/to/file.ext'
+          // first we strip the metalsmith.destination()
+          let destPath = relative(metalsmith.destination(), file.path)
+
+          // if the file was in-source, we strip the source path part (eg 'src') too.
+          if (destPath.startsWith(sourceRelPath)) {
+            destPath = relative(metalsmith.source(), metalsmith.path(destPath))
+          }
+
+          files[destPath] = {
+            contents: Buffer.from(file.contents.buffer)
+          }
+          if (babelPostProcess && extname(destPath) === '.js') {
+            files[destPath].__babelPostProcess = true
+          }
+        })
+
+        if (babelPostProcess) {
+          es5Plugin()(files, metalsmith, done)
+        } else {
+          done()
+        }
+      })
+      .catch((err) => {
+        done(err)
+      })
   }
 }
 
-export default initCorePlugin
+export default initJsBundle
