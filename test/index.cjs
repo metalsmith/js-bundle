@@ -6,7 +6,7 @@ const Metalsmith = require('metalsmith')
 const { name } = require('../package.json')
 /* eslint-disable-next-line */
 const plugin = require('../lib/index.cjs')
-const tomlPlugin = require('esbuild-plugin-toml')
+const markdownPlugin = require('esbuild-plugin-markdown').markdownPlugin
 const updateSnapshots = Array.prototype.slice.call(process.argv, 2).indexOf('--updateSnapshots') > -1
 
 function fixture(p) {
@@ -28,9 +28,6 @@ function initUnitTestSnapshots(destination) {
       .run(cloned, metalsmith.plugins.filter(x => x !== unitTesting))
       .then((cloned) => {
         return metalsmith.write(cloned)
-      })
-      .then(() => {
-        done()
       })
       .catch(error => {
         err = error
@@ -84,7 +81,9 @@ const testcases = [
     dir: 'custom-plugins',
     options: {
       entries: { 'index': './index.js' },
-      plugins: [tomlPlugin()]
+      plugins: [markdownPlugin()],
+      minify: true,
+      minifySyntax: false
     }
   },
   {

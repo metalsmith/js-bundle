@@ -1,5 +1,5 @@
 import test, { param } from './imported'
-import data from './src/data.toml'
+import data from './src/data.md'
 
 class YourHalo {
   static returnSomething() {
@@ -9,7 +9,6 @@ class YourHalo {
 
 new YourHalo()
 
-data.text.p.toLowerCase()
 test(param)
 
-document.getElementById('app').style.cssText = ''
+document.getElementById('app').innerHTML = data
