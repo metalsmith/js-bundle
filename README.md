@@ -65,6 +65,8 @@ metalsmith.use(
 )
 ```
 
+The paths in the `entries` option should be relative to `metalsmith.directory()`.
+
 ### Options
 
 `@metalsmith/js-bundle` provides access to most underlying [esbuild options](https://esbuild.github.io/api/#build-api), with a few notable differences:
