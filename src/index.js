@@ -1,5 +1,5 @@
 import { build } from 'esbuild'
-import { relative, basename, extname } from 'path'
+import { relative, extname } from 'path'
 import es5Plugin from './es5'
 
 const debugNs = '@metalsmith/js-bundle'
@@ -42,7 +42,7 @@ function normalizeOptions(options = {}, metalsmith, debug) {
   const overwrites = {
     entryPoints: entries,
     absWorkingDir: metalsmith.directory(),
-    outdir: basename(metalsmith.destination()),
+    outdir: relative(metalsmith.directory(), metalsmith.destination()),
     write: false,
     metafile: true,
     define
