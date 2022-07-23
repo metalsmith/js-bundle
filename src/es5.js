@@ -1,9 +1,8 @@
 import { transform, loadOptions } from '@babel/core'
 
 export default function es5PluginInit() {
-  return function es5Plugin(files, ms, done) {
+  return function es5Plugin(files, ms) {
     const isDev = ms.env('NODE_ENV') === 'development'
-    const transforms = []
     const options = loadOptions({
       envName: ms.env('NODE_ENV'),
       presets: [
@@ -21,22 +20,13 @@ export default function es5PluginInit() {
       cwd: ms.directory()
       //inputSourceMap
     })
-    Object.values(files).forEach((file) => {
-      if (file.__babelPostProcess) {
-        transforms.push(
-          new Promise((resolve, reject) => {
-            transform(file.contents.toString(), options, (err, result) => {
-              if (err) reject(err)
-              file.contents = Buffer.from(result.code)
-              delete file.__babelPostProcess
-              resolve()
-            })
-          })
-        )
-      }
-    })
-    Promise.all(transforms)
-      .then(() => done())
-      .catch(done)
+    const transforms = Object.values(files)
+      .filter((file) => file.__babelPostProcess)
+      .map(async (file) => {
+        const { code } = await transform(file.contents.toString(), options)
+        file.contents = Buffer.from(code)
+        delete file.__babelPostProcess
+      })
+    return Promise.all(transforms)
   }
 }

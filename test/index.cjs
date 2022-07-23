@@ -20,31 +20,25 @@ function fixture(p) {
 }
 
 function initUnitTestSnapshots(destination) {
-  return function unitTesting(files, metalsmith, done) {
+  return async function unitTesting(files, metalsmith) {
     const cloned = Object.entries(files).reduce((all, [key, value]) => {
       all[key] = Object.assign({}, value)
       return all
     }, {})
     const cachedDest = metalsmith.destination()
     const cachedClean = metalsmith.clean()
-    let err
-    metalsmith
-      .destination(destination)
-      .clean(true)
-      .run(
-        cloned,
-        metalsmith.plugins.filter((x) => x !== unitTesting)
-      )
-      .then((cloned) => {
-        return metalsmith.write(cloned)
-      })
-      .catch((error) => {
-        err = error
-      })
-      .finally(() => {
-        metalsmith.destination(cachedDest).clean(cachedClean)
-        done(err)
-      })
+    try {
+      const results = metalsmith
+        .destination(destination)
+        .clean(true)
+        .run(
+          cloned,
+          metalsmith.plugins.filter((x) => x !== unitTesting)
+        )
+      return metalsmith.write(results)
+    } finally {
+      metalsmith.destination(cachedDest).clean(cachedClean)
+    }
   }
 }
 const testcases = [
@@ -121,19 +115,15 @@ describe('@metalsmith/js-bundle', function () {
   })
 
   testcases.forEach(({ name, dir, options }) => {
-    it(name, function (done) {
+    it(name, async function () {
       const ms = Metalsmith(fixture(dir)).env('DEBUG', process.env.DEBUG).use(plugin(options))
 
       if (updateSnapshots) {
         ms.use(initUnitTestSnapshots('expected'))
       }
 
-      ms.build()
-        .then(() => {
-          equals(fixture(`${dir}/build`), fixture(`${dir}/expected`))
-          done()
-        })
-        .catch(done)
+      await ms.build()
+      equals(fixture(`${dir}/build`), fixture(`${dir}/expected`))
     })
   })
 })
