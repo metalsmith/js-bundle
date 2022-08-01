@@ -13,7 +13,7 @@ let markdownPlugin
 if (nodeMajorVersion > 12) {
   markdownPlugin = require('esbuild-plugin-markdown').markdownPlugin
 }
-const updateSnapshots = Array.prototype.slice.call(process.argv, 2).indexOf('--updateSnapshots') > -1
+const updateSnapshots = process.argv.indexOf('--updateSnapshots') > 1
 
 function fixture(p) {
   return require('path').resolve(__dirname, 'fixtures', p)
