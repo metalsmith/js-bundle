@@ -73,7 +73,7 @@ The paths in the `entries` option should be relative to `metalsmith.directory()`
 
 The options `absWorkingDir` (=`metalsmith.directory()`), `outdir` (=`metalsmith.destination()`), `write` (=`false`), and `metafile` (=`true`) can not be set, they are determined by the plugin.
 
-The option `entryPoints` is renamed to `entries`. Specify `entries` as a `{'target': 'path/to/source.js' }`} object, and mind that the target _should not have an extension_.
+The option `entryPoints` is renamed to `entries`. Specify `entries` as a `{'target': 'path/to/source' }`} object, and mind that the target (in the example a file `source.js`) _should not have an extension_.
 
 The option `define` is automatically filled with with `metalsmith.env()`, but can be overwritten if desired. `metalsmith.env('DEBUG')` would be accessible in the bundle as `process.env.DEBUG`.
 
