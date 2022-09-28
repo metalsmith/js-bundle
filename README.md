@@ -65,6 +65,8 @@ metalsmith.use(
 )
 ```
 
+The key of the `entries` option determines the location of the processed file. For example `index: 'lib/index.js'` will result in `/index.js`, while `'/assets/index': 'lib/index.js'` will result in `/assets/index.js'.
+
 The paths in the `entries` option should be relative to `metalsmith.directory()`.
 
 ### Options
