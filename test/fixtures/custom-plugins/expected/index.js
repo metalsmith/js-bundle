@@ -1,5 +1,5 @@
-(()=>{function e(){}var m=`<h1 id="test">test</h1>
+(()=>{function t(){}var n={html:`<h1 id="test">test</h1>
 <p><em>italic text</em></p>
-`,i=`# test
+`,raw:`# test
 
-*italic text*`,r="data.md",a={html:m,raw:i,filename:r};var n=class{static returnSomething(){return"something"}};new n;e(1);document.getElementById("app").innerHTML=a;})();
+*italic text*`,filename:"data.md"};var e=class{static returnSomething(){return"something"}};new e;t(1);document.getElementById("app").innerHTML=n;})();
