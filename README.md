@@ -33,7 +33,7 @@ yarn add @metalsmith/js-bundle
 Pass `@metalsmith/js-bundle` to `metalsmith.use` :
 
 ```js
-const jsBundle = require('@metalsmith/js-bundle')
+import jsBundle from '@metalsmith/js-bundle'
 
 metalsmith.use(
   jsBundle({
@@ -77,7 +77,7 @@ The options `absWorkingDir` (=`metalsmith.directory()`), `outdir` (=`metalsmith.
 
 The option `entryPoints` is renamed to `entries`. Specify `entries` as a `{'target': 'path/to/source.js' }`} object, and mind that the target _should not have an extension_.
 
-The option `define` is automatically filled with with `metalsmith.env()`, but can be overwritten if desired. `metalsmith.env('DEBUG')` would be accessible in the bundle as `process.env.DEBUG`.
+The option `define` is automatically filled with `metalsmith.env()`, but can be overwritten if desired. `metalsmith.env('DEBUG')` would be accessible in the bundle as `process.env.DEBUG`.
 
 ### Loading assets
 

@@ -64,7 +64,14 @@ function normalizeOptions(options = {}, metalsmith, debug) {
 
 /**
  * A metalsmith plugin that bundles your JS using [esbuild](https://esbuild.github.io)
+ * @example
  *
+ * metalsmith.use(
+ *   jsBundle({ entries: {
+ *     index: 'lib/index.js',
+ *     'second/src/file': 'second/bundle/output.js'
+ *   }})
+ * )
  * @param {Options} options
  * @returns {import('metalsmith').Plugin}
  */
