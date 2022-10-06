@@ -65,7 +65,7 @@
     "lint": "eslint --fix .",
     "lint:check": "eslint --fix-dry-run .",
     "release": "npm run build && release-it .",
-    "build": "microbundle --target node --no-sourcemap -f cjs,esm --strict",
+    "build": "microbundle --target node --no-sourcemap -f cjs,esm --strict --generateTypes=false",
     "pretest": "npm run build",
     "test": "nyc mocha -t 5000",
     "test:debug": "DEBUG=@metalsmith/js-bundle:* npm test",
