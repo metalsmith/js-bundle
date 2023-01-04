@@ -1,6 +1,6 @@
 import { build } from 'esbuild'
 import { relative, extname } from 'path'
-import es5Plugin from './es5'
+import es5Plugin from './es5.js'
 
 const debugNs = '@metalsmith/js-bundle'
 
