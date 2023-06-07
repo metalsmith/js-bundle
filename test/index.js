@@ -1,23 +1,23 @@
 /* eslint-env node, mocha */
+import assert from 'assert'
+import { resolve, dirname } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import equals from 'assert-dir-equal'
+import Metalsmith from 'metalsmith'
+import plugin from '../src/index.js'
+import all from 'esbuild-plugin-markdown'
 
-const assert = require('assert')
-const equals = require('assert-dir-equal')
-const Metalsmith = require('metalsmith')
-const { name } = require('../package.json')
-/* eslint-disable-next-line */
-const plugin = require('../lib/index.cjs')
-
-// unfortunately the specific esbuild plugin does not support Node <= 12
-const nodeMajorVersion = parseInt(process.version.match(/v(\d+).*/)[1])
-let markdownPlugin
-if (nodeMajorVersion > 12) {
-  markdownPlugin = require('esbuild-plugin-markdown').markdownPlugin
-}
-const updateSnapshots = process.argv.indexOf('--updateSnapshots') > 1
+const markdownPlugin = all.markdownPlugin
+console.log(markdownPlugin)
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const { name } = JSON.parse(readFileSync(resolve(__dirname, '../package.json'), 'utf-8'))
 
 function fixture(p) {
-  return require('path').resolve(__dirname, 'fixtures', p)
+  return resolve(__dirname, 'fixtures', p)
 }
+
+const updateSnapshots = process.argv.indexOf('--updateSnapshots') > 1
 
 function initUnitTestSnapshots(destination) {
   return function unitTesting(files, metalsmith, done) {
@@ -106,13 +106,10 @@ const testcases = [
         OBJVALUE: { hello: 'world' }
       }
     }
-  }
+  },
   // @TODO: add testcase for React/JSX
   // @TODO: add testcase for Typescript
-]
-
-if (nodeMajorVersion > 12) {
-  testcases.push({
+  {
     name: 'should support custom plugins',
     dir: 'custom-plugins',
     options: {
@@ -121,8 +118,8 @@ if (nodeMajorVersion > 12) {
       minify: true,
       minifySyntax: false
     }
-  })
-}
+  }
+]
 
 describe('@metalsmith/js-bundle', function () {
   it('should export a named plugin function matching package.json name', function () {
