@@ -17,14 +17,19 @@ const debugNs = '@metalsmith/js-bundle'
 function normalizeOptions(options = {}, metalsmith, debug) {
   const entryPoints = options.entries || {}
   const isProd = metalsmith.env('NODE_ENV') !== 'development'
-  const define = Object.entries(metalsmith.env()).reduce((acc, [name, value]) => {
+  const define = Object.entries(options.define || metalsmith.env()).reduce((acc, [name, value]) => {
     if (typeof value === 'undefined') {
       debug.warn('Define option "%s" value is undefined', name)
       acc[`process.env.${name}`] = 'undefined'
       return acc
     }
     // see notes at https://esbuild.github.io/api/#define, string values require explicit quotes
-    acc[`process.env.${name}`] = typeof value === 'string' ? `'${value}'` : value.toString()
+    acc[`process.env.${name}`] =
+      typeof value === 'string'
+        ? `'${value}'`
+        : ['boolean', 'number', 'function'].includes(typeof value)
+        ? value.toString()
+        : JSON.stringify(value)
     return acc
   }, {})
 
@@ -36,8 +41,7 @@ function normalizeOptions(options = {}, metalsmith, debug) {
     platform: 'browser',
     target: 'es6',
     assetNames: '[dir]/[name]',
-    drop: isProd ? ['console', 'debugger'] : [],
-    define
+    drop: isProd ? ['console', 'debugger'] : []
   }
 
   /** @type {Options} */
@@ -46,7 +50,8 @@ function normalizeOptions(options = {}, metalsmith, debug) {
     absWorkingDir: metalsmith.directory(),
     outdir: relative(metalsmith.directory(), metalsmith.destination()),
     write: false,
-    metafile: true
+    metafile: true,
+    define
   }
 
   // eslint-disable-next-line no-unused-vars

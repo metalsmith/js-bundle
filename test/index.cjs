@@ -92,6 +92,20 @@ const testcases = [
       entries: { index: './index.js' },
       target: 'es5'
     }
+  },
+  {
+    name: 'should correctly output "define" (env var) option values',
+    dir: 'option-define',
+    options: {
+      entries: { index: './src/index.js' },
+      define: {
+        STRVALUE: 'a string',
+        BOOLVALUE: false,
+        NUMVALUE: 66,
+        ARRVALUE: ['hello', 1],
+        OBJVALUE: { hello: 'world' }
+      }
+    }
   }
   // @TODO: add testcase for React/JSX
   // @TODO: add testcase for Typescript
