@@ -6,10 +6,10 @@ import { fileURLToPath } from 'node:url'
 import equals from 'assert-dir-equal'
 import Metalsmith from 'metalsmith'
 import plugin from '../src/index.js'
+// eslint-disable-next-line
 import all from 'esbuild-plugin-markdown'
 
 const markdownPlugin = all.markdownPlugin
-console.log(markdownPlugin)
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const { name } = JSON.parse(readFileSync(resolve(__dirname, '../package.json'), 'utf-8'))
 
