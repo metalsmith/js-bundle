@@ -15,7 +15,7 @@ const debugNs = '@metalsmith/js-bundle'
  * @returns {Object}
  */
 function normalizeOptions(options = {}, metalsmith, debug) {
-  const entries = options.entries || {}
+  const entryPoints = options.entries || {}
   const isProd = metalsmith.env('NODE_ENV') !== 'development'
   const define = Object.entries(metalsmith.env()).reduce((acc, [name, value]) => {
     if (typeof value === 'undefined') {
@@ -40,29 +40,21 @@ function normalizeOptions(options = {}, metalsmith, debug) {
     define
   }
 
-  const isFullyInSource = Object.values(entries).every((sourcepath) => {
-    return metalsmith.path(sourcepath).startsWith(metalsmith.source())
-  })
-
   /** @type {Options} */
   const overwrites = {
-    entryPoints: entries,
+    entryPoints,
     absWorkingDir: metalsmith.directory(),
     outdir: relative(metalsmith.directory(), metalsmith.destination()),
     write: false,
     metafile: true
   }
 
-  if (isFullyInSource) {
-    debug.info('All entries to bundle are in metalsmith.source(), setting `outbase` to metalsmith.source()')
-    overwrites.outbase = metalsmith.source()
-  }
-
-  delete options.entries
+  // eslint-disable-next-line no-unused-vars
+  const { entries, ...otherOptions } = options
 
   return {
     ...defaults,
-    ...options,
+    ...otherOptions,
     ...overwrites
   }
 }
@@ -92,23 +84,33 @@ function initJsBundle(options = {}) {
 
   return function jsBundle(files, metalsmith, done) {
     const debug = metalsmith.debug(debugNs)
-
-    options = normalizeOptions(options, metalsmith, debug)
-    if (Object.keys(options.entryPoints).length === 0) {
+    const normalizedOptions = normalizeOptions(options, metalsmith, debug)
+    debug('%o', options)
+    debug('Running with options %O', normalizedOptions)
+    if (Object.keys(normalizedOptions.entryPoints).length === 0) {
       debug.warn('No files to process, skipping.')
       done()
+      return
     }
 
-    options.entryPoints = Object.entries(options.entryPoints).reduce((mapped, current) => {
+    const isFullyInSource = Object.values(normalizedOptions.entryPoints).every((sourcepath) => {
+      return metalsmith.path(sourcepath).startsWith(metalsmith.source())
+    })
+
+    if (isFullyInSource) {
+      debug.info('All entries to bundle are in metalsmith.source(), setting `outbase` to metalsmith.source()')
+      normalizedOptions.outbase = metalsmith.source()
+    }
+
+    normalizedOptions.entryPoints = Object.entries(normalizedOptions.entryPoints).reduce((mapped, current) => {
       const [dest, src] = current
       mapped[dest] = src
       return mapped
     }, {})
 
-    debug('Running with options %O', options)
     const sourceRelPath = relative(metalsmith.directory(), metalsmith.source())
 
-    build(options)
+    build(normalizedOptions)
       .then((result) => {
         debug(
           'Finished bundling %O',
