@@ -8,7 +8,7 @@ import Metalsmith from 'metalsmith'
 import plugin from '../src/index.js'
 // eslint-disable-next-line
 import all from 'esbuild-plugin-markdown'
-
+// eslint-disable-next-line import/no-named-as-default-member
 const markdownPlugin = all.markdownPlugin
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const { name } = JSON.parse(readFileSync(resolve(__dirname, '../package.json'), 'utf-8'))
