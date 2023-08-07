@@ -77,6 +77,6 @@
   "dependencies": {
     "@babel/core": "^7.22.10",
     "@babel/preset-env": "^7.22.10",
-    "esbuild": "^0.17.19"
+    "esbuild": "^0.18.19"
   }
 }
