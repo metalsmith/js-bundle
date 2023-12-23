@@ -28,8 +28,8 @@ function normalizeOptions(options = {}, metalsmith, debug) {
       typeof value === 'string'
         ? `'${value}'`
         : ['boolean', 'number', 'function'].includes(typeof value)
-        ? value.toString()
-        : JSON.stringify(value)
+          ? value.toString()
+          : JSON.stringify(value)
     return acc
   }, {})
 
