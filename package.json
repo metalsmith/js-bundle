@@ -75,8 +75,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@babel/core": "^7.23.6",
-    "@babel/preset-env": "^7.23.6",
-    "esbuild": "^0.19.10"
+    "@babel/core": "^7.23.9",
+    "@babel/preset-env": "^7.23.9",
+    "esbuild": "^0.20.1"
   }
 }
