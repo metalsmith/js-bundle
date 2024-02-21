@@ -16,6 +16,7 @@ const debugNs = '@metalsmith/js-bundle'
  */
 function normalizeOptions(options = {}, metalsmith, debug) {
   const entryPoints = options.entries || {}
+  const msDir = metalsmith.directory()
   const isProd = metalsmith.env('NODE_ENV') !== 'development'
   const define = Object.entries(options.define || metalsmith.env()).reduce((acc, [name, value]) => {
     if (typeof value === 'undefined') {
@@ -47,8 +48,8 @@ function normalizeOptions(options = {}, metalsmith, debug) {
   /** @type {Options} */
   const overwrites = {
     entryPoints,
-    absWorkingDir: metalsmith.directory(),
-    outdir: relative(metalsmith.directory(), metalsmith.destination()),
+    absWorkingDir: msDir,
+    outdir: relative(msDir, metalsmith.destination()),
     write: false,
     metafile: true,
     define
@@ -90,43 +91,47 @@ function initJsBundle(options = {}) {
   return function jsBundle(files, metalsmith, done) {
     const debug = metalsmith.debug(debugNs)
     const normalizedOptions = normalizeOptions(options, metalsmith, debug)
-    debug('%o', options)
+    const entrypoints = normalizedOptions.entryPoints
+
     debug('Running with options %O', normalizedOptions)
-    if (Object.keys(normalizedOptions.entryPoints).length === 0) {
+    if (Object.keys(entrypoints).length === 0) {
       debug.warn('No files to process, skipping.')
       done()
       return
     }
 
-    const isFullyInSource = Object.values(normalizedOptions.entryPoints).every((sourcepath) => {
-      return metalsmith.path(sourcepath).startsWith(metalsmith.source())
+    const src = metalsmith.source()
+    const dest = metalsmith.destination()
+
+    const isFullyInSource = Object.values(entrypoints).every((sourcepath) => {
+      return metalsmith.path(sourcepath).startsWith(src)
     })
 
     if (isFullyInSource) {
       debug.info('All entries to bundle are in metalsmith.source(), setting `outbase` to metalsmith.source()')
-      normalizedOptions.outbase = metalsmith.source()
+      normalizedOptions.outbase = src
     }
 
-    normalizedOptions.entryPoints = Object.entries(normalizedOptions.entryPoints).reduce((mapped, current) => {
+    normalizedOptions.entryPoints = Object.entries(entrypoints).reduce((mapped, current) => {
       const [dest, src] = current
       mapped[dest] = src
       return mapped
     }, {})
 
-    const sourceRelPath = relative(metalsmith.directory(), metalsmith.source())
+    const sourceRelPath = relative(metalsmith.directory(), src)
 
     build(normalizedOptions)
       .then((result) => {
         debug(
           'Finished bundling %O',
-          result.outputFiles.map((o) => relative(metalsmith.destination(), o.path))
+          result.outputFiles.map((o) => relative(dest, o.path))
         )
 
         // first read esbuild metafile to remove the compilation inputs from the build
         Object.values(result.metafile.outputs).forEach((o) => {
           if (o.inputs) {
             metalsmith.match(`${sourceRelPath}/**`, Object.keys(o.inputs)).forEach((input) => {
-              delete files[relative(metalsmith.source(), metalsmith.path(input))]
+              delete files[relative(src, metalsmith.path(input))]
             })
           }
         })
@@ -134,11 +139,11 @@ function initJsBundle(options = {}) {
         result.outputFiles.forEach((file) => {
           // For in-source files, esbuild returns entries in the format 'build/src/path/to/file.ext'
           // first we strip the metalsmith.destination()
-          let destPath = relative(metalsmith.destination(), file.path)
+          let destPath = relative(dest, file.path)
 
           // if the file was in-source, we strip the source path part (eg 'src') too.
           if (destPath.startsWith(sourceRelPath)) {
-            destPath = relative(metalsmith.source(), metalsmith.path(destPath))
+            destPath = relative(src, metalsmith.path(destPath))
           }
 
           files[destPath] = {
