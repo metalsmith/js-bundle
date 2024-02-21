@@ -137,14 +137,8 @@ function initJsBundle(options = {}) {
         })
 
         result.outputFiles.forEach((file) => {
-          // For in-source files, esbuild returns entries in the format 'build/src/path/to/file.ext'
-          // first we strip the metalsmith.destination()
+          // strip the metalsmith.destination()
           let destPath = relative(dest, file.path)
-
-          // if the file was in-source, we strip the source path part (eg 'src') too.
-          if (destPath.startsWith(sourceRelPath)) {
-            destPath = relative(src, metalsmith.path(destPath))
-          }
 
           files[destPath] = {
             contents: Buffer.from(file.contents.buffer)
