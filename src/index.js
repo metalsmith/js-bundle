@@ -122,8 +122,11 @@ function initJsBundle(options = {}) {
 
     build(normalizedOptions)
       .then((result) => {
+        // the lines below until #L138 must be revisited, they can definitely be simplified.
+        // esbuild outputFiles return absolute paths, while metafile.outputs has a { 'output/path': { inputs: { 'input/path' }, imports: {...}}} format
+        // furthermore it looks like 'file' loader inputs will NOT be removed from the build
         debug(
-          'Finished bundling %O',
+          'Finished processing files %O',
           result.outputFiles.map((o) => relative(dest, o.path))
         )
 
@@ -136,9 +139,10 @@ function initJsBundle(options = {}) {
           }
         })
 
+        debug('Adding processed files to build')
         result.outputFiles.forEach((file) => {
           // strip the metalsmith.destination()
-          let destPath = relative(dest, file.path)
+          const destPath = relative(dest, file.path)
 
           files[destPath] = {
             contents: Buffer.from(file.contents.buffer)
@@ -149,6 +153,7 @@ function initJsBundle(options = {}) {
         })
 
         if (babelPostProcess) {
+          debug('Post-processing with babel')
           es5Plugin()(files, metalsmith, done)
         } else {
           done()
