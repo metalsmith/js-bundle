@@ -37,20 +37,20 @@
   "homepage": "https://github.com/metalsmith/js-bundle#readme",
   "devDependencies": {
     "assert-dir-equal": "^1.1.0",
-    "auto-changelog": "^2.4.0",
-    "c8": "^9.1.0",
+    "auto-changelog": "^2.5.0",
+    "c8": "^10.1.2",
     "esbuild-plugin-markdown": "^0.0.3",
     "esbuild-plugin-toml": "^0.0.1",
-    "eslint": "^8.57.0",
+    "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-n": "^17.2.1",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-n": "^17.12.0",
     "metalsmith": "^2.6.3",
     "microbundle": "^0.15.1",
-    "mocha": "^10.4.0",
-    "prettier": "^3.2.5",
-    "release-it": "^17.2.0",
-    "serve": "^14.2.2"
+    "mocha": "^10.8.2",
+    "prettier": "^3.3.3",
+    "release-it": "^17.10.0",
+    "serve": "^14.2.4"
   },
   "peerDependencies": {
     "metalsmith": "^2.5.0"
