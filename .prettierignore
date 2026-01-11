@@ -1,3 +1,4 @@
 test/fixtures/**
+lib/**
 coverage/**
 package-lock.json
